@@ -15,6 +15,10 @@ The system is optimised for 1-1 dialogue between players and NPCs. The player is
 
 ## Syntax
 
+<p align="center">
+    <img src="documentation/NODE_explanation.png" width="80%" align="center" />
+</p>
+
 ## Current syntax of NODE
 
 Not all features in the syntax design are available to use right now. Currently, if you want to create conversation files with NODE the following syntax must be used:
