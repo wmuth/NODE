@@ -2,16 +2,9 @@
 using System.Text.RegularExpressions;
 
 
-class DialogueCLI
+class DialogueCLI(string conversationsDirectory)
 {
-    private DialogueParser _parser;
-    private List<Conversation> _conversations;
-
-    public DialogueCLI(string conversationsDirectory)
-    {
-        _parser = new DialogueParser();
-        _conversations = _parser.ParseDirectory(conversationsDirectory);
-    }
+    private readonly List<Conversation> _conversations = DialogueParser.ParseDirectory(conversationsDirectory);
 
     public void Run()
     {
@@ -35,7 +28,7 @@ class DialogueCLI
         StartConversation(conversation);
     }
 
-    private void StartConversation(Conversation conversation)
+    private static void StartConversation(Conversation conversation)
     {
         var currentNode = conversation.GetNode("start");
 
@@ -84,7 +77,7 @@ class DialogueCLI
         }
     }
 
-    public static void Main(string[] args)
+    public static void Main()
     {
         //Console.Write("Enter the path to the conversations directory: ");
         //var conversationsDirectory = Console.ReadLine();
@@ -110,7 +103,9 @@ public class DialogueNode
 
     public DialogueNode()
     {
-        Options = new List<DialogueOption>();
+        Name = "";
+        Text = "";
+        Options = [];
         Condition = () => true; // Default condition is always true
     }
 }
@@ -124,31 +119,34 @@ public class DialogueOption
 
     public DialogueOption()
     {
+        Text = "";
+        NextNode = "";
         Condition = () => true; // Default condition is always true
     }
 }
 
-public class Conversation
+public class Conversation(string name)
 {
-    public string Name { get; private set; }
-    public Dictionary<string, DialogueNode> Nodes { get; private set; }
+    public string Name { get; private set; } = name;
+    public Dictionary<string, DialogueNode> Nodes { get; private set; } = [];
 
-    public Conversation(string name)
-    {
-        Name = name;
-        Nodes = new Dictionary<string, DialogueNode>();
-    }
-
-    public DialogueNode GetNode(string nodeName)
+    public DialogueNode? GetNode(string nodeName)
     {
         return Nodes.TryGetValue(nodeName, out var node) ? node : null;
     }
 }
 public class DialogueParser
 {
-    public Dictionary<string, object> GlobalVariables => GlobalState.Instance.Variables;
+    public static Dictionary<string, object> GlobalVariables => GlobalState.Instance.Variables;
 
-    public List<Conversation> ParseDirectory(string directoryPath)
+    private static readonly string[] QuestionEq = ["?="];
+    private static readonly string[] PlusEq = ["+="];
+    private static readonly string[] Assign = ["="];
+    private static readonly string[] Eq = ["=="];
+    private static readonly string[] NotEq = ["!="];
+    private static readonly string[] Arrow = ["->"];
+
+    public static List<Conversation> ParseDirectory(string directoryPath)
     {
         var conversations = new List<Conversation>();
         var files = Directory.GetFiles(directoryPath, "*.txt");
@@ -164,7 +162,7 @@ public class DialogueParser
         return conversations;
     }
 
-    private Conversation ParseConversation(string filePath)
+    private static Conversation ParseConversation(string filePath)
     {
         var lines = File.ReadAllLines(filePath);
         var conversation = new Conversation(Path.GetFileNameWithoutExtension(filePath));
@@ -213,9 +211,9 @@ public class DialogueParser
         return conversation;
     }
 
-    private void ParseVariableInitialization(string line, string file)
+    private static void ParseVariableInitialization(string line, string file)
     {
-        var parts = line.Split(new[] { "?=" }, StringSplitOptions.None);
+        var parts = line.Split(QuestionEq, StringSplitOptions.None);
         var name = parts[0].Trim();
         var n_clean = parts[1].Remove(parts[1].Length - 1).Trim();
         var value = EvaluateExpression(n_clean);
@@ -223,10 +221,10 @@ public class DialogueParser
         GlobalState.Instance.InitializeVariable(name, value, file);
     }
 
-    private DialogueOption ParseOption(string line)
+    private static DialogueOption ParseOption(string line)
     {
         var condition = ExtractCondition(line);
-        var parts = line.Split(new[] { "->" }, StringSplitOptions.None);
+        var parts = line.Split(Arrow, StringSplitOptions.None);
 
         var optionText = ExtractText(parts[0]);
         var nextNode = ExtractNextNode(parts[1]);
@@ -241,7 +239,7 @@ public class DialogueParser
         };
     }
 
-    private DialogueOption ParseGoodbyeOption(string line)
+    private static DialogueOption ParseGoodbyeOption(string line)
     {
         var match = Regex.Match(line, @"=x\s*\{""([^""]*)""\}");
         if (!match.Success) throw new InvalidOperationException("Invalid =x syntax.");
@@ -257,13 +255,13 @@ public class DialogueParser
         };
     }
 
-    private string ExtractText(string part)
+    private static string ExtractText(string part)
     {
         var match = Regex.Match(part, @"\{""([^""]*)""\}");
         return match.Success ? match.Groups[1].Value : string.Empty;
     }
 
-    private Func<bool> ExtractCondition(string part)
+    private static Func<bool> ExtractCondition(string part)
     {
         var match = Regex.Match(part, @"\{(.*?)\}");
         if (!match.Success || string.IsNullOrWhiteSpace(match.Groups[1].Value))
@@ -276,13 +274,13 @@ public class DialogueParser
         return () => EvaluateCondition(condition);
     }
 
-    private string ExtractNextNode(string part)
+    private static string ExtractNextNode(string part)
     {
         var match = Regex.Match(part, @"\s{(.*?)}");
         return match.Success ? match.Groups[1].Value : string.Empty;
     }
 
-    private Action ExtractAction(string part)
+    private static Action ExtractAction(string part)
     {
         var match = Regex.Match(part, @"\s.*}\s{(.*)}");
         if (!match.Success || string.IsNullOrWhiteSpace(match.Groups[1].Value))
@@ -292,7 +290,7 @@ public class DialogueParser
         return () => EvaluateAction(action);
     }
 
-    private object EvaluateExpression(string expression)
+    private static object? EvaluateExpression(string expression)
     {
         if (expression.Equals("{}"))
             return null;
@@ -300,7 +298,7 @@ public class DialogueParser
         if (int.TryParse(expression, out var intValue))
             return intValue;
 
-        if (expression.StartsWith("\"") && expression.EndsWith("\""))
+        if (expression.StartsWith('"') && expression.EndsWith('"'))
             return expression.Trim('"');
 
         if (expression.Equals("true"))
@@ -311,18 +309,18 @@ public class DialogueParser
 
         GlobalState.Instance.UseVariable(expression);
 
-        if (GlobalVariables.ContainsKey(expression))
-            return GlobalVariables[expression];
+        if (GlobalVariables.TryGetValue(expression, out object? value))
+            return value;
 
         return null;
     }
 
-    private bool EvaluateAction(string action)
+    private static bool EvaluateAction(string action)
     {
         try
         {
             // Simple condition evaluation (you can expand this for more complex conditions)
-            var parts = action.Split(new[] { "+=" }, StringSplitOptions.None);
+            var parts = action.Split(PlusEq, StringSplitOptions.None);
             if (parts.Length == 2)
             {
                 var left = parts[0].Trim();
@@ -342,7 +340,7 @@ public class DialogueParser
             }
 
 
-            parts = action.Split(new[] { "=" }, StringSplitOptions.None);
+            parts = action.Split(Assign, StringSplitOptions.None);
             if (parts.Length == 2)
             {
                 var left = parts[0].Trim();
@@ -362,12 +360,12 @@ public class DialogueParser
         }
     }
 
-    private bool EvaluateCondition(string condition)
+    private static bool EvaluateCondition(string condition)
     {
         try
         {
             // Simple condition evaluation (you can expand this for more complex conditions)
-            var parts = condition.Split(new[] { "==" }, StringSplitOptions.None);
+            var parts = condition.Split(Eq, StringSplitOptions.None);
             if (parts.Length == 2)
             {
                 var left = EvaluateExpression(parts[0].Trim());
@@ -375,7 +373,7 @@ public class DialogueParser
                 return left.Equals(right);
             }
 
-            parts = condition.Split(new[] { "!=" }, StringSplitOptions.None);
+            parts = condition.Split(NotEq, StringSplitOptions.None);
             if (parts.Length == 2)
             {
                 var left = EvaluateExpression(parts[0].Trim());
@@ -394,7 +392,7 @@ public class DialogueParser
         }
     }
 
-    private void TrackVariableUsage(string expression)
+    private static void TrackVariableUsage(string expression)
     {
         var variables = Regex.Matches(expression, @"\b\w+\b")
                              .Cast<Match>()
@@ -413,23 +411,22 @@ public class GlobalState
     private static GlobalState _instance;
     public Dictionary<string, object> Variables { get; private set; }
     private Dictionary<string, string> _initializedVariables;
-    private HashSet<string> _usedVariables;
+    private readonly HashSet<string> _usedVariables;
 
     private GlobalState()
     {
-        Variables = new Dictionary<string, object>();
-        _initializedVariables = new Dictionary<string, string>();
-        _usedVariables = new HashSet<string>();
+        Variables = [];
+        _initializedVariables = [];
+        _usedVariables = [];
     }
 
     public static GlobalState Instance => _instance ??= new GlobalState();
 
     public void InitializeVariable(string name, object value, string file)
     {
-        if (!_initializedVariables.ContainsKey(name))
+        if (_initializedVariables.TryAdd(name, file))
         {
             Variables[name] = value;
-            _initializedVariables.Add(name, file);
         }
     }
 
@@ -496,7 +493,7 @@ public class GlobalState
             {
                 var json = File.ReadAllText(filePath);
                 Variables = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-                _initializedVariables = new Dictionary<string, string>();
+                _initializedVariables = [];
                 Console.WriteLine("Global state loaded successfully.");
             }
             else
