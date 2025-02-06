@@ -1,2 +1,2 @@
 # NODE
-NODE - Narrative Oriented Dialogue Engine
+NODE is an opensource Narrative Oriented Dialogue Engine. It is inspired by "GOTO" style old-school scripting languages.
