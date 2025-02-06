@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DialogueParser", "DialogueParser\DialogueParser.csproj", "{4A5F79B7-4C51-4A7A-A56D-57D67FD29642}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDialogueParser", "TestDialogueParser\TestDialogueParser.csproj", "{911B237B-FDC8-4064-BA89-F4F5C9B788E4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4A5F79B7-4C51-4A7A-A56D-57D67FD29642} = {4A5F79B7-4C51-4A7A-A56D-57D67FD29642}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4A5F79B7-4C51-4A7A-A56D-57D67FD29642}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A5F79B7-4C51-4A7A-A56D-57D67FD29642}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A5F79B7-4C51-4A7A-A56D-57D67FD29642}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A5F79B7-4C51-4A7A-A56D-57D67FD29642}.Release|Any CPU.Build.0 = Release|Any CPU
+		{911B237B-FDC8-4064-BA89-F4F5C9B788E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{911B237B-FDC8-4064-BA89-F4F5C9B788E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{911B237B-FDC8-4064-BA89-F4F5C9B788E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{911B237B-FDC8-4064-BA89-F4F5C9B788E4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FE9CD85A-A794-4749-8207-7DD05E5A5E43}
+	EndGlobalSection
+EndGlobal

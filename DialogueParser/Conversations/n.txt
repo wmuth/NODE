@@ -1,0 +1,48 @@
+// NPC's dialogue file
+// ?= sets a variable if it does not exist
+questAccepted ?= false;
+hasAskedQuest ?= false;
+
+==start==
+// Initial greeting from the NPC
+{} {"Welcome, traveler! How can I assist you today?"}
+// Option to accept a quest
+=> {hasAskedQuest == false} {"Do you need help with any quests?"} -> {quest_offer} {hasAskedQuest = true}
+=> {hasAskedQuest == true} {"Remind me about the quest you needed help with."} -> {quest_offer} {}
+// Option to just chat
+=> {} {"Let's just chat for a while."} -> {chat} {}
+// Option to say goodbye
+=x {"I must be going now."}
+
+==quest_offer==
+// NPC offers a quest
+{} {"Here is information about the task."}
+// Option to accept the quest, which sets questAccepted to true
+=> {questAccepted == false} {"Yes, I will help you."} -> {accept_quest} {questAccepted = true}
+// Option to decline the quest
+=> {questAccepted == false} {"No, I'm too busy."} -> {decline_quest} {}
+=> {questAccepted == true} {"Thanks for reminding me."} -> {start} {}
+
+==accept_quest==
+// NPC thanks the player for accepting the quest
+{} {"Thank you! I knew I could count on you."}
+=> {} {"Let's talk about something else"} -> {start} {}
+=x {"Goodbye."}
+
+==decline_quest==
+// NPC shows disappointment but understands
+{} {"I see. Maybe another time."}
+=> {} {"Let's talk about something else"} -> {start} {}
+=x {"Goodbye."}
+
+==chat==
+// Casual conversation node
+{} {"It's nice to take a break from adventuring, don't you think?"}
+// Option to return to the start node
+=> {} {"Indeed, but I should get back to my journey."} -> {start} {}
+// Option to say goodbye
+=x {"I really must be going now."}
+
+==goodbye==
+// Final goodbye node
+{} {"Safe travels, my friend. Until we meet again!"}

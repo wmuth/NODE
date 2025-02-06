@@ -1,0 +1,16 @@
+//SPEAKER’S CONVERSATION FILE
+relationship ?= 5;
+
+==start==
+{} {"Start node"}
+=> {} {"Hello $str_name$"} -> {continue} {}
+=> {relationship == 5} {"This option can be used once."} -> {continue} {relationship += 5}
+=x {"This ends the conversation"}
+
+==continue==
+{} {"This is the continue node!"}
+=> {} {"Let's talk some more!"} -> {start} {}
+=x {"Goodbye!"}}
+
+==goodbye==
+{} {"Goodbye node."}
